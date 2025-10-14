@@ -9,5 +9,6 @@ package com.mycompany.libronova.model.enums;
  * @author Coder
  */
 public enum UserRole {
-    
+    ADMIN,
+    ASSISTANT
 }

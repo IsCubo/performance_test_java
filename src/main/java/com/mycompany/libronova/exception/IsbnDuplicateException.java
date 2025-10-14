@@ -8,6 +8,8 @@ package com.mycompany.libronova.exception;
  *
  * @author Coder
  */
-public class IsbnDuplicateException {
-    
+public class IsbnDuplicateException extends LibroNovaException {
+    public IsbnDuplicateException() {
+        super(ErrorCode.ISBN_DUPLICATE);
+    }
 }

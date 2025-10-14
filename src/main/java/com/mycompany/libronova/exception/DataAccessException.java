@@ -8,6 +8,8 @@ package com.mycompany.libronova.exception;
  *
  * @author Coder
  */
-public class DataAccessException {
-    
+public class DataAccessException extends LibroNovaException {
+    public DataAccessException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
 }
