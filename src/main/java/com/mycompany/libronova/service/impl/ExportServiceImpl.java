@@ -11,10 +11,9 @@ import com.mycompany.libronova.exception.LibroNovaException;
 import com.mycompany.libronova.model.Book;
 import com.mycompany.libronova.model.Loan;
 import com.mycompany.libronova.service.ExportService;
+import com.mycompany.libronova.util.CsvExporter;
 import com.mycompany.libronova.util.LoggerManager;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.logging.Level;
@@ -22,6 +21,11 @@ import java.util.logging.Level;
 /**
  *
  * @author Coder
+ */
+/**
+ * CORRECTED implementation of the ExportService.
+ * This class orchestrates the export process by fetching data and delegating
+ * the file-writing task to the CsvExporter utility.
  */
 public class ExportServiceImpl implements ExportService {
 
@@ -33,50 +37,44 @@ public class ExportServiceImpl implements ExportService {
         this.loanDAO = loanDAO;
     }
 
+    /**
+     * Exports the complete book catalog to a CSV file.
+     * It fetches the data and then calls the CsvExporter utility to do the writing.
+     * @param path The file path where the CSV will be saved.
+     */
     @Override
     public void exportBooksToCsv(Path path) {
-        List<Book> books = bookDAO.findAll();
-        try (PrintWriter writer = new PrintWriter(new FileWriter(path.toFile()))) {
-            // CSV Header
-            writer.println("isbn,title,author,category,total_copies,available_copies,reference_price,is_active");
+        try {
+            List<Book> books = bookDAO.findAll();
 
-            // CSV Data
-            for (Book book : books) {
-                writer.printf("\"%s\",\"%s\",\"%s\",\"%s\",%d,%d,%.2f,%b%n",
-                        book.getIsbn(),
-                        book.getTitle(),
-                        book.getAuthor(),
-                        book.getCategory(),
-                        book.getTotalCopies(),
-                        book.getAvailableCopies(),
-                        book.getReferencePrice(),
-                        book.isActive());
-            }
+            CsvExporter.exportBooks(path, books); 
+
             LoggerManager.log(Level.INFO, "Book catalog successfully exported to " + path);
+
         } catch (IOException e) {
             LoggerManager.log(Level.SEVERE, "Failed to export books to CSV", e);
             throw new LibroNovaException(ErrorCode.CSV_EXPORT_ERROR, e);
         }
     }
 
+    /**
+     * Exports all overdue loans to a CSV file.
+     * It fetches the data and then calls the CsvExporter utility to do the writing.
+     * @param path The file path where the CSV will be saved.
+     */
     @Override
     public void exportOverdueLoansToCsv(Path path) {
-        List<Loan> loans = loanDAO.findOverdueLoans();
-        try (PrintWriter writer = new PrintWriter(new FileWriter(path.toFile()))) {
-            // CSV Header
-            writer.println("loan_id,book_isbn,member_id,loan_date,due_date");
+        try {
+            // Responsabilidad del Servicio: Obtener los datos de negocio.
+            List<Loan> loans = loanDAO.findOverdueLoans();
 
-            // CSV Data
-            for (Loan loan : loans) {
-                writer.printf("%d,\"%s\",%d,%s,%s%n",
-                        loan.getId(),
-                        loan.getBookIsbn(),
-                        loan.getMemberId(),
-                        loan.getLoanDate().toString(),
-                        loan.getDueDate().toString());
-            }
+            // Responsabilidad del Servicio: Delegar la tarea técnica a la herramienta.
+            CsvExporter.exportOverdueLoans(path, loans); // <-- PASO 2: Usar la herramienta
+
             LoggerManager.log(Level.INFO, "Overdue loans successfully exported to " + path);
+            
         } catch (IOException e) {
+            // Si la herramienta (CsvExporter) falla, el servicio lo captura y lo maneja.
             LoggerManager.log(Level.SEVERE, "Failed to export overdue loans to CSV", e);
             throw new LibroNovaException(ErrorCode.CSV_EXPORT_ERROR, e);
         }
