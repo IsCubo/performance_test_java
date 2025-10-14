@@ -1,0 +1,71 @@
+
+# Archivos de compilación
+*.class
+
+# Archivos de log
+*.log
+
+# Directorios de compilación
+bin/
+build/
+out/
+target/
+
+# Archivos generados por el sistema
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Configuraciones de NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# Configuraciones de Eclipse
+.project
+.classpath
+.cproject
+.settings/
+
+# Configuraciones de IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Maven y Gradle
+.mvn/
+!mvn/wrapper/maven-wrapper.jar
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Archivos de pruebas y cobertura
+*.ec
+*.coverage
+*.coveragedata
+*.lcov
+.jacoco/
+
+# Archivos de sistema o de backup
+*.bak
+*.tmp
+*.old
+
+# Claves o archivos sensibles (nunca los subas si los tienes)
+*.key
+*.pem
+*.env
