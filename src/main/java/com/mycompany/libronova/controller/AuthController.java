@@ -26,6 +26,7 @@ public class AuthController {
     public AuthController(AuthService authService) {
         this.authService = authService;
     }
+    
 
     /**
      * Attempts to log in the user and handles the view's response.
