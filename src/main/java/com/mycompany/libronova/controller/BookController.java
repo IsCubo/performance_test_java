@@ -19,7 +19,8 @@ import javax.swing.JOptionPane;
  * @author Coder
  */
 /**
- * Controller to manage interactions between the book views and the book service.
+ * Controller to manage interactions between the book views and the book
+ * service.
  */
 public class BookController {
 
@@ -31,6 +32,7 @@ public class BookController {
 
     /**
      * Fetches all books and returns them for display in a view.
+     *
      * @return A list of all books, or an empty list if an error occurs.
      */
     public List<Book> getAllBooks() {
@@ -44,6 +46,7 @@ public class BookController {
 
     /**
      * Handles the logic for creating a new book.
+     *
      * @param newBook The book object populated with data from a form.
      * @return true if the creation was successful, false otherwise.
      */
@@ -60,6 +63,7 @@ public class BookController {
 
     /**
      * Handles the logic for updating an existing book.
+     *
      * @param bookToUpdate The book object with updated data.
      * @return true if the update was successful, false otherwise.
      */
@@ -76,6 +80,7 @@ public class BookController {
 
     /**
      * Toggles the active status of a book.
+     *
      * @param isbn The ISBN of the book to toggle.
      * @return true if the operation was successful, false otherwise.
      */
@@ -93,17 +98,17 @@ public class BookController {
     private void handleError(LibroNovaException ex, String logMessage) {
         LoggerManager.log(Level.SEVERE, logMessage + " Error: " + ex.getMessage(), ex);
         JOptionPane.showMessageDialog(
-            null,
-            "Operation failed: " + ex.getErrorCode().getMessage(),
-            "Error - Code: " + ex.getErrorCode().getCode(),
-            JOptionPane.ERROR_MESSAGE
+                null,
+                "Operation failed: " + ex.getErrorCode().getMessage(),
+                "Error - Code: " + ex.getErrorCode().getCode(),
+                JOptionPane.ERROR_MESSAGE
         );
     }
-    
+
     private void showSuccessMessage(String message) {
         JOptionPane.showMessageDialog(null, message, "Success", JOptionPane.INFORMATION_MESSAGE);
     }
-    
+
     public Optional<Book> getBookByIsbn(String isbn) {
         try {
             // Delega la llamada directamente al servicio.
@@ -112,12 +117,16 @@ public class BookController {
             // Si ocurre un error en una capa inferior (ej. error de BD), lo maneja.
             LoggerManager.log(Level.SEVERE, "Failed to retrieve book with ISBN: " + isbn, ex);
             JOptionPane.showMessageDialog(
-                null,
-                "Failed to retrieve book: " + ex.getErrorCode().getMessage(),
-                "Error - Code: " + ex.getErrorCode().getCode(),
-                JOptionPane.ERROR_MESSAGE
+                    null,
+                    "Failed to retrieve book: " + ex.getErrorCode().getMessage(),
+                    "Error - Code: " + ex.getErrorCode().getCode(),
+                    JOptionPane.ERROR_MESSAGE
             );
             return Optional.empty(); // Devuelve un Optional vacío en caso de error.
         }
+    }
+
+    public List<Book> getAllAvailableBooks() {
+        return bookService.getAllAvailableBooks();
     }
 }

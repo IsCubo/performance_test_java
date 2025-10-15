@@ -34,7 +34,11 @@ public class MemberController {
             return Collections.emptyList();
         }
     }
-    
+
+    public List<Member> getAllActiveMembers() {
+        return memberService.getAllActiveMembers();
+    }
+
     public boolean createMember(Member newMember) {
         try {
             memberService.registerMember(newMember);
@@ -49,21 +53,21 @@ public class MemberController {
     private void handleError(LibroNovaException ex, String logMessage) {
         LoggerManager.log(Level.SEVERE, logMessage + " Error: " + ex.getMessage(), ex);
         JOptionPane.showMessageDialog(null,
-            "Operation failed: " + ex.getErrorCode().getMessage(),
-            "Error - Code: " + ex.getErrorCode().getCode(),
-            JOptionPane.ERROR_MESSAGE);
+                "Operation failed: " + ex.getErrorCode().getMessage(),
+                "Error - Code: " + ex.getErrorCode().getCode(),
+                JOptionPane.ERROR_MESSAGE);
     }
-    
+
     private void showSuccessMessage(String message) {
         JOptionPane.showMessageDialog(null, message, "Success", JOptionPane.INFORMATION_MESSAGE);
     }
-    
+
     public Optional<Member> getMemberById(int id) {
-    try {
-        return memberService.getMemberById(id);
-    } catch (LibroNovaException ex) {
-        handleError(ex, "Failed to retrieve member with id: " + id);
-        return Optional.empty();
+        try {
+            return memberService.getMemberById(id);
+        } catch (LibroNovaException ex) {
+            handleError(ex, "Failed to retrieve member with id: " + id);
+            return Optional.empty();
+        }
     }
-}
 }

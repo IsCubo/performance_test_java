@@ -48,6 +48,7 @@ public interface MemberService {
      */
     List<Member> getAllMembers();
     Optional<Member> getMemberById(int id);
+    List<Member> getAllActiveMembers();
 }
 
 

@@ -44,6 +44,11 @@ public class LoanServiceImpl implements LoanService {
     }
 
     @Override
+    public List<Loan> getLoansByMemberId(int memberId) {
+        return loanDAO.findByMemberId(memberId);
+    }
+
+    @Override
     public Loan performLoan(String bookIsbn, int memberId) {
         Connection conn = null;
         try {
@@ -81,7 +86,7 @@ public class LoanServiceImpl implements LoanService {
             newLoan.setDueDate(LocalDate.now().plusDays(loanDays));
             newLoan.setReturned(false);
             newLoan.setFine(0.0);
-            
+
             Loan createdLoan = loanDAO.create(newLoan, conn); // Use the same connection
 
             conn.commit(); // --- COMMIT TRANSACTION ---
@@ -97,7 +102,9 @@ public class LoanServiceImpl implements LoanService {
             } catch (SQLException se) {
                 LoggerManager.log(Level.SEVERE, "CRITICAL: Failed to rollback transaction.", se);
             }
-            if (e instanceof LibroNovaException) throw (LibroNovaException) e;
+            if (e instanceof LibroNovaException) {
+                throw (LibroNovaException) e;
+            }
             throw new DataAccessException(ErrorCode.TRANSACTION_ERROR, e);
         } finally {
             closeConnection(conn);
@@ -125,7 +132,7 @@ public class LoanServiceImpl implements LoanService {
 
             // 4. Calculate fine
             double fine = calculateFine(loan.getDueDate());
-            
+
             // 5. Update loan record
             loan.setReturned(true);
             loan.setReturnDate(LocalDate.now());
@@ -138,11 +145,15 @@ public class LoanServiceImpl implements LoanService {
 
         } catch (SQLException | LibroNovaException e) {
             try {
-                if (conn != null) conn.rollback(); // --- ROLLBACK TRANSACTION ---
+                if (conn != null) {
+                    conn.rollback(); // --- ROLLBACK TRANSACTION ---
+                }
             } catch (SQLException se) {
                 LoggerManager.log(Level.SEVERE, "CRITICAL: Failed to rollback transaction.", se);
             }
-            if (e instanceof LibroNovaException) throw (LibroNovaException) e;
+            if (e instanceof LibroNovaException) {
+                throw (LibroNovaException) e;
+            }
             throw new DataAccessException(ErrorCode.TRANSACTION_ERROR, e);
         } finally {
             closeConnection(conn);
@@ -162,7 +173,7 @@ public class LoanServiceImpl implements LoanService {
         }
         return 0.0;
     }
-    
+
     private void closeConnection(Connection conn) {
         if (conn != null) {
             try {
@@ -172,5 +183,10 @@ public class LoanServiceImpl implements LoanService {
                 LoggerManager.log(Level.SEVERE, "Failed to close connection.", e);
             }
         }
+    }
+
+    @Override
+    public List<Loan> getAllLoans() {
+        return loanDAO.findAll();
     }
 }

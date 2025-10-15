@@ -43,7 +43,7 @@ public class LoanDAOImpl implements LoanDAO {
     public Loan create(Loan loan, Connection connection) {
         LoggerManager.logHttpRequest("POST", "/loans", "Attempting");
         try (PreparedStatement pstmt = connection.prepareStatement(INSERT_LOAN_SQL, Statement.RETURN_GENERATED_KEYS)) {
-            
+
             pstmt.setString(1, loan.getBookIsbn());
             pstmt.setInt(2, loan.getMemberId());
             pstmt.setDate(3, Date.valueOf(loan.getLoanDate()));
@@ -75,9 +75,8 @@ public class LoanDAOImpl implements LoanDAO {
     @Override
     public Optional<Loan> findById(int id) {
         LoggerManager.logHttpRequest("GET", "/loans/" + id, "Attempting");
-        try (Connection conn = DatabaseConnector.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SELECT_LOAN_BY_ID_SQL)) {
-            
+        try (Connection conn = DatabaseConnector.getConnection(); PreparedStatement pstmt = conn.prepareStatement(SELECT_LOAN_BY_ID_SQL)) {
+
             pstmt.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
@@ -94,9 +93,7 @@ public class LoanDAOImpl implements LoanDAO {
     public List<Loan> findAll() {
         LoggerManager.logHttpRequest("GET", "/loans", "Attempting");
         List<Loan> loans = new ArrayList<>();
-        try (Connection conn = DatabaseConnector.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(SELECT_ALL_LOANS_SQL)) {
+        try (Connection conn = DatabaseConnector.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(SELECT_ALL_LOANS_SQL)) {
 
             while (rs.next()) {
                 loans.add(mapResultSetToLoan(rs));
@@ -112,8 +109,7 @@ public class LoanDAOImpl implements LoanDAO {
     public List<Loan> findOverdueLoans() {
         LoggerManager.logHttpRequest("GET", "/loans/overdue", "Attempting");
         List<Loan> loans = new ArrayList<>();
-        try (Connection conn = DatabaseConnector.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SELECT_OVERDUE_LOANS_SQL)) {
+        try (Connection conn = DatabaseConnector.getConnection(); PreparedStatement pstmt = conn.prepareStatement(SELECT_OVERDUE_LOANS_SQL)) {
 
             pstmt.setDate(1, Date.valueOf(LocalDate.now()));
             ResultSet rs = pstmt.executeQuery();
@@ -142,7 +138,7 @@ public class LoanDAOImpl implements LoanDAO {
     public Loan update(Loan loan, Connection connection) {
         LoggerManager.logHttpRequest("PATCH", "/loans/" + loan.getId(), "Attempting");
         try (PreparedStatement pstmt = connection.prepareStatement(UPDATE_LOAN_SQL)) {
-            
+
             pstmt.setObject(1, loan.getReturnDate() != null ? Date.valueOf(loan.getReturnDate()) : null);
             pstmt.setDouble(2, loan.getFine());
             pstmt.setBoolean(3, loan.isReturned());
@@ -170,5 +166,23 @@ public class LoanDAOImpl implements LoanDAO {
                 rs.getDouble("fine"),
                 rs.getBoolean("is_returned")
         );
+    }
+
+    @Override
+    public List<Loan> findByMemberId(int memberId) {
+        List<Loan> loans = new ArrayList<>();
+        String sql = "SELECT * FROM loans WHERE member_id = ? ORDER BY loan_date DESC";
+        try (Connection conn = DatabaseConnector.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, memberId);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                loans.add(mapResultSetToLoan(rs));
+            }
+        } catch (SQLException e) {
+            LoggerManager.log(Level.SEVERE, "Error finding loans for member ID: " + memberId, e);
+            throw new DataAccessException(ErrorCode.QUERY_ERROR, e);
+        }
+        return loans;
     }
 }

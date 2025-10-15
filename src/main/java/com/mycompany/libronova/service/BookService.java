@@ -10,8 +10,6 @@ package com.mycompany.libronova.service;
  */
 
 import com.mycompany.libronova.model.Book;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Service layer for book management.
@@ -84,6 +82,6 @@ public interface BookService {
      * @return a {@link List} of {@link Book} entities matching the category filter
      */
     List<Book> filterBooksByCategory(String category);
-
+    List<Book> getAllAvailableBooks();
 }
 

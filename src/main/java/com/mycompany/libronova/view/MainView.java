@@ -12,6 +12,7 @@ import com.mycompany.libronova.controller.UserController;
 import com.mycompany.libronova.model.User;
 import com.mycompany.libronova.model.enums.UserRole;
 import com.mycompany.libronova.view.panels.BookManagementPanel;
+import com.mycompany.libronova.view.panels.LoanManagementPanel;
 import com.mycompany.libronova.view.panels.MemberManagementPanel;
 import com.mycompany.libronova.view.panels.UserManagementPanel;
 import java.awt.*;
@@ -64,11 +65,13 @@ public class MainView extends JFrame {
         BookManagementPanel bookPanel = new BookManagementPanel(bookController);
         MemberManagementPanel memberPanel = new MemberManagementPanel(memberController);
         UserManagementPanel userPanel = new UserManagementPanel(userController);
+        LoanManagementPanel loanPanel = new LoanManagementPanel(loggedInUser, loanController, bookController, memberController);
 
         mainContentPanel.add(welcomePanel, "WELCOME");
         mainContentPanel.add(bookPanel, "BOOKS");
         mainContentPanel.add(memberPanel, "MEMBERS");
         mainContentPanel.add(userPanel, "USERS");
+        mainContentPanel.add(loanPanel, "LOANS");
 
         add(mainContentPanel, BorderLayout.CENTER);
         cardLayout.show(mainContentPanel, "WELCOME");
@@ -97,21 +100,21 @@ public class MainView extends JFrame {
         manageMembersItem.addActionListener(e -> cardLayout.show(mainContentPanel, "MEMBERS"));
         JMenuItem manageUsersItem = new JMenuItem("Manage Users");
         manageUsersItem.addActionListener(e -> cardLayout.show(mainContentPanel, "USERS"));
-        if (loggedInUser.getRole() != UserRole.ADMIN) {
-            manageUsersItem.setEnabled(false);
+        menuBar.add(fileMenu);
+        if (loggedInUser.getRole() == UserRole.ADMIN) {
+            menuBar.add(managementMenu);
+            manageUsersItem.setEnabled(true);
+            managementMenu.add(manageUsersItem);
+            menuBar.add(managementMenu);
+            managementMenu.add(manageBooksItem);
+            managementMenu.add(manageMembersItem);
         }
-        managementMenu.add(manageBooksItem);
-        managementMenu.add(manageMembersItem);
-        managementMenu.add(manageUsersItem);
 
         JMenu loansMenu = new JMenu("Loans");
-        JMenuItem newLoanItem = new JMenuItem("New Loan...");
-        JMenuItem newReturnItem = new JMenuItem("Register Return...");
-        loansMenu.add(newLoanItem);
-        loansMenu.add(newReturnItem);
+        JMenuItem manageLoansItem = new JMenuItem("Manage Loans & Returns");
+        manageLoansItem.addActionListener(e -> cardLayout.show(mainContentPanel, "LOANS"));
+        loansMenu.add(manageLoansItem);
 
-        menuBar.add(fileMenu);
-        menuBar.add(managementMenu);
         menuBar.add(loansMenu);
         return menuBar;
     }

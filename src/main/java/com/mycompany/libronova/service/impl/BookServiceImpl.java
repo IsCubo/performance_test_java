@@ -15,8 +15,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-
-
 /**
  *
  * @author Coder
@@ -49,7 +47,7 @@ public class BookServiceImpl implements BookService {
         // Ensure the book exists before updating
         bookDAO.findByIsbn(book.getIsbn())
                 .orElseThrow(() -> new LibroNovaException(ErrorCode.INVALID_DATA));
-        
+
         return bookDAO.update(book);
     }
 
@@ -57,11 +55,11 @@ public class BookServiceImpl implements BookService {
     public void toggleBookStatus(String isbn) {
         Book book = bookDAO.findByIsbn(isbn)
                 .orElseThrow(() -> new LibroNovaException(ErrorCode.INVALID_DATA));
-        
+
         book.setActive(!book.isActive());
         bookDAO.update(book);
     }
-    
+
     @Override
     public Optional<Book> getBookByIsbn(String isbn) {
         return bookDAO.findByIsbn(isbn);
@@ -83,6 +81,14 @@ public class BookServiceImpl implements BookService {
     public List<Book> filterBooksByCategory(String category) {
         return bookDAO.findAll().stream()
                 .filter(book -> book.getCategory().equalsIgnoreCase(category))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Book> getAllAvailableBooks() {
+        // Filtramos en la capa de servicio para obtener solo libros activos y con stock.
+        return bookDAO.findAll().stream()
+                .filter(book -> book.isActive() && book.getAvailableCopies() > 0)
                 .collect(Collectors.toList());
     }
 }

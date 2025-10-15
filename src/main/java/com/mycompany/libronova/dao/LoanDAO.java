@@ -83,5 +83,6 @@ public interface LoanDAO {
      * @return the updated {@link Loan}
      */
     Loan update(Loan loan, Connection connection);
+    List<Loan> findByMemberId(int memberId);
 }
 

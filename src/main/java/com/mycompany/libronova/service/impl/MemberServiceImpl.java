@@ -15,6 +15,7 @@ import com.mycompany.libronova.service.MemberService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -73,5 +74,13 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public Optional<Member> getMemberById(int id) {
         return memberDAO.findById(id);
+    }
+
+    @Override
+    public List<Member> getAllActiveMembers() {
+        // Filtramos para obtener solo socios activos.
+        return memberDAO.findAll().stream()
+                .filter(member -> member.getStatus() == MemberStatus.ACTIVE)
+                .collect(Collectors.toList());
     }
 }

@@ -5,8 +5,12 @@
 package com.mycompany.libronova.controller;
 
 import com.mycompany.libronova.exception.LibroNovaException;
+import com.mycompany.libronova.model.Loan;
 import com.mycompany.libronova.service.LoanService;
 import com.mycompany.libronova.util.LoggerManager;
+import com.mycompany.libronova.view.dialogs.LoanDialog;
+import java.awt.Frame;
+import java.util.List;
 import java.util.logging.Level;
 import javax.swing.JOptionPane;
 
@@ -47,12 +51,32 @@ public class LoanController {
     private void handleError(LibroNovaException ex, String logMessage) {
         LoggerManager.log(Level.WARNING, logMessage + " Reason: " + ex.getMessage(), ex);
         JOptionPane.showMessageDialog(null,
-            "Operation failed: " + ex.getErrorCode().getMessage(),
-            "Validation Error - Code: " + ex.getErrorCode().getCode(),
-            JOptionPane.WARNING_MESSAGE);
+                "Operation failed: " + ex.getErrorCode().getMessage(),
+                "Validation Error - Code: " + ex.getErrorCode().getCode(),
+                JOptionPane.WARNING_MESSAGE);
     }
 
     private void showSuccessMessage(String message) {
         JOptionPane.showMessageDialog(null, message, "Success", JOptionPane.INFORMATION_MESSAGE);
     }
+
+    /**
+     * Crea y muestra el diálogo modal para gestionar préstamos y devoluciones.
+     *
+     * @param parent El Frame que será el padre del diálogo (para que sea modal
+     * sobre él).
+     */
+    public void showLoanDialog(Frame parent) {
+        LoanDialog dialog = new LoanDialog(parent, this);
+        dialog.setVisible(true);
+    }
+
+    public List<Loan> getAllLoans() {
+        return loanService.getAllLoans();
+    }
+
+    public List<Loan> getLoansByMemberId(int memberId) {
+        return loanService.getLoansByMemberId(memberId);
+    }
+
 }

@@ -38,4 +38,8 @@ public interface LoanService {
      * @return A list of overdue loans.
      */
     List<Loan> getOverdueLoans();
+    
+    List<Loan> getAllLoans();
+    
+    List<Loan> getLoansByMemberId(int memberId);
 }
