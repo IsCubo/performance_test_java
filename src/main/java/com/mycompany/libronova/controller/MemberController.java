@@ -10,6 +10,7 @@ import com.mycompany.libronova.service.MemberService;
 import com.mycompany.libronova.util.LoggerManager;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import javax.swing.JOptionPane;
 
@@ -56,4 +57,13 @@ public class MemberController {
     private void showSuccessMessage(String message) {
         JOptionPane.showMessageDialog(null, message, "Success", JOptionPane.INFORMATION_MESSAGE);
     }
+    
+    public Optional<Member> getMemberById(int id) {
+    try {
+        return memberService.getMemberById(id);
+    } catch (LibroNovaException ex) {
+        handleError(ex, "Failed to retrieve member with id: " + id);
+        return Optional.empty();
+    }
+}
 }

@@ -1,29 +1,19 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.libronova.view.panels;
 
-/**
- *
- * @author Coder
- */
 import com.mycompany.libronova.controller.MemberController;
 import com.mycompany.libronova.model.Member;
+import com.mycompany.libronova.view.dialogs.MemberFormDialog;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
-/**
- * A JPanel for managing library members. It displays member information
- * in a table and provides controls for adding and editing them.
- */
 public class MemberManagementPanel extends JPanel {
 
     private final MemberController memberController;
 
-    // --- UI Components ---
+    // --- Componentes Visuales ---
     private JTable memberTable;
     private DefaultTableModel tableModel;
     private JButton addButton, editButton;
@@ -34,15 +24,14 @@ public class MemberManagementPanel extends JPanel {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        initComponents();
+        initComponents(); // <<-- Ahora este método SÍ hará algo
         initListeners();
-        
-        // Initial data load
         loadMemberData();
     }
 
+    // <<< CORRECCIÓN: SE AÑADE EL CÓDIGO FALTANTE AQUÍ
     private void initComponents() {
-        // --- Top Panel (Toolbar) ---
+        // --- Panel Superior (Barra de herramientas con búsqueda) ---
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         topPanel.add(new JLabel("Search by Name/Email:"));
         searchField = new JTextField(25);
@@ -51,7 +40,7 @@ public class MemberManagementPanel extends JPanel {
         topPanel.add(searchButton);
         add(topPanel, BorderLayout.NORTH);
 
-        // --- Center Panel (Table) ---
+        // --- Panel Central (Tabla) ---
         String[] columnNames = {"ID", "First Name", "Last Name", "Email", "Status"};
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
@@ -64,7 +53,7 @@ public class MemberManagementPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(memberTable);
         add(scrollPane, BorderLayout.CENTER);
 
-        // --- Right Panel (Action Buttons) ---
+        // --- Panel Derecho (Botones de Acción) ---
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
         rightPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
@@ -87,7 +76,9 @@ public class MemberManagementPanel extends JPanel {
 
     private void initListeners() {
         addButton.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Add New Member dialog would open here.", "Info", JOptionPane.INFORMATION_MESSAGE);
+            Frame parentFrame = (Frame) SwingUtilities.getWindowAncestor(this);
+            MemberFormDialog dialog = new MemberFormDialog(parentFrame, memberController);
+            dialog.setVisible(true);
             loadMemberData();
         });
 
@@ -98,8 +89,13 @@ public class MemberManagementPanel extends JPanel {
                 return;
             }
             int memberId = (int) tableModel.getValueAt(selectedRow, 0);
-            JOptionPane.showMessageDialog(this, "Edit dialog for Member ID: " + memberId + " would open here.", "Info", JOptionPane.INFORMATION_MESSAGE);
-            loadMemberData();
+            
+            memberController.getMemberById(memberId).ifPresent(memberToEdit -> {
+                Frame parentFrame = (Frame) SwingUtilities.getWindowAncestor(this);
+                MemberFormDialog dialog = new MemberFormDialog(parentFrame, memberController, memberToEdit);
+                dialog.setVisible(true);
+                loadMemberData();
+            });
         });
     }
 

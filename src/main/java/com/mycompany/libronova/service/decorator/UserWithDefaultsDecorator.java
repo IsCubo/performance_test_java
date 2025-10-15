@@ -9,6 +9,7 @@ import com.mycompany.libronova.model.enums.UserRole;
 import com.mycompany.libronova.service.UserService;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -49,4 +50,9 @@ public class UserWithDefaultsDecorator implements UserService {
     public User updateUser(User user) {
         return this.wrappedUserService.updateUser(user);
     }
+    @Override
+    public Optional<User> getUserById(int id) {
+    // El decorator no añade lógica aquí, solo pasa la llamada al servicio envuelto.
+    return (Optional<User>) this.wrappedUserService.getUserById(id);
+}
 }

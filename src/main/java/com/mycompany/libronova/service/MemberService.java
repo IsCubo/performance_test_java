@@ -12,6 +12,7 @@ import java.util.List;
  * @author Coder
  */
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Service interface for managing {@link Member} entities.
@@ -46,6 +47,7 @@ public interface MemberService {
      * @return a {@link List} of all {@link Member} entities
      */
     List<Member> getAllMembers();
+    Optional<Member> getMemberById(int id);
 }
 
 
