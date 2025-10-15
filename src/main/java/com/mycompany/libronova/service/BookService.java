@@ -84,5 +84,6 @@ public interface BookService {
      * @return a {@link List} of {@link Book} entities matching the category filter
      */
     List<Book> filterBooksByCategory(String category);
+
 }
 

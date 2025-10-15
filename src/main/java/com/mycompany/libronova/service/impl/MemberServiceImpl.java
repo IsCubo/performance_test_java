@@ -9,10 +9,12 @@ import com.mycompany.libronova.exception.ErrorCode;
 import com.mycompany.libronova.exception.LibroNovaException;
 import com.mycompany.libronova.exception.MemberDuplicateException;
 import com.mycompany.libronova.model.Member;
+import com.mycompany.libronova.model.User;
 import com.mycompany.libronova.model.enums.MemberStatus;
 import com.mycompany.libronova.service.MemberService;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -27,9 +29,9 @@ import java.util.List;
  * @author Coder
  */
 public class MemberServiceImpl implements MemberService {
-    
+
     private final MemberDAO memberDAO;
-    
+
     /**
      * Constructs a new MemberServiceImpl with the specified DAO.
      *
@@ -38,7 +40,7 @@ public class MemberServiceImpl implements MemberService {
     public MemberServiceImpl(MemberDAO memberDAO) {
         this.memberDAO = memberDAO;
     }
-    
+
     @Override
     public Member registerMember(Member member) {
         // Business Rule: Validate that member ID or email is unique
@@ -46,25 +48,30 @@ public class MemberServiceImpl implements MemberService {
         memberDAO.findById(member.getId()).ifPresent(m -> {
             throw new MemberDuplicateException();
         });
-        
+
         // Set server-side properties
         member.setStatus(MemberStatus.ACTIVE);
         member.setCreatedAt(LocalDateTime.now());
-        
+
         return memberDAO.create(member);
     }
-    
+
     @Override
     public Member updateMemberInfo(Member member) {
         // Ensure the member exists before updating
         memberDAO.findById(member.getId())
                 .orElseThrow(() -> new LibroNovaException(ErrorCode.INVALID_DATA));
-        
+
         return memberDAO.update(member);
     }
-    
+
     @Override
     public List<Member> getAllMembers() {
         return memberDAO.findAll();
+    }
+
+    @Override
+    public Optional<Member> getMemberById(int id) {
+        return memberDAO.findById(id);
     }
 }

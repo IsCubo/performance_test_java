@@ -1,0 +1,383 @@
+%% DIAGRAMA DE CLASES - MODELO DE DOMINIO
+classDiagram
+    class Book {
+        -String isbn
+        -String title
+        -String author
+        -String category
+        -int totalCopies
+        -int availableCopies
+        -double referencePrice
+        -boolean isActive
+        -LocalDateTime createdAt
+        +getters()
+        +setters()
+    }
+
+    class Member {
+        -int id
+        -String firstName
+        -String lastName
+        -String email
+        -MemberStatus status
+        -LocalDateTime createdAt
+        +getters()
+        +setters()
+    }
+
+    class User {
+        -int id
+        -String username
+        -String password
+        -UserRole role
+        -boolean isActive
+        -LocalDateTime createdAt
+        +getters()
+        +setters()
+    }
+
+    class Loan {
+        -int id
+        -String bookIsbn
+        -int memberId
+        -LocalDate loanDate
+        -LocalDate dueDate
+        -LocalDate returnDate
+        -double fine
+        -boolean isReturned
+        +getters()
+        +setters()
+    }
+
+    class MemberStatus {
+        <<enumeration>>
+        ACTIVE
+        INACTIVE
+    }
+
+    class UserRole {
+        <<enumeration>>
+        ADMIN
+        ASSISTANT
+    }
+
+    %% Relaciones del Modelo
+    Member "1" --> "0..*" Loan : realiza
+    Book "1" --> "0..*" Loan : es prestado
+    Member --> MemberStatus : tiene
+    User --> UserRole : tiene
+
+    %% CAPA DAO
+    class BookDAO {
+        <<interface>>
+        +create(Book) Book
+        +create(Book, Connection) Book
+        +findByIsbn(String) Optional~Book~
+        +findAll() List~Book~
+        +update(Book) Book
+        +update(Book, Connection) Book
+        +delete(String) void
+    }
+
+    class MemberDAO {
+        <<interface>>
+        +create(Member) Member
+        +findById(int) Optional~Member~
+        +findAll() List~Member~
+        +update(Member) Member
+        +delete(int) void
+    }
+
+    class UserDAO {
+        <<interface>>
+        +create(User) User
+        +findById(int) Optional~User~
+        +findByUsername(String) Optional~User~
+        +findAll() List~User~
+        +update(User) User
+        +delete(int) void
+    }
+
+    class LoanDAO {
+        <<interface>>
+        +create(Loan) Loan
+        +create(Loan, Connection) Loan
+        +findById(int) Optional~Loan~
+        +findAll() List~Loan~
+        +findOverdueLoans() List~Loan~
+        +update(Loan) Loan
+        +update(Loan, Connection) Loan
+    }
+
+    class BookDAOImpl {
+        +create(Book) Book
+        +findByIsbn(String) Optional~Book~
+        +findAll() List~Book~
+        +update(Book) Book
+        +delete(String) void
+    }
+
+    class MemberDAOImpl {
+        +create(Member) Member
+        +findById(int) Optional~Member~
+        +findAll() List~Member~
+        +update(Member) Member
+    }
+
+    class UserDAOImpl {
+        +create(User) User
+        +findByUsername(String) Optional~User~
+        +findAll() List~User~
+        +update(User) User
+    }
+
+    class LoanDAOImpl {
+        +create(Loan) Loan
+        +findById(int) Optional~Loan~
+        +findOverdueLoans() List~Loan~
+        +update(Loan) Loan
+    }
+
+    %% Relaciones DAO
+    BookDAO <|.. BookDAOImpl : implements
+    MemberDAO <|.. MemberDAOImpl : implements
+    UserDAO <|.. UserDAOImpl : implements
+    LoanDAO <|.. LoanDAOImpl : implements
+
+    BookDAOImpl ..> Book : uses
+    MemberDAOImpl ..> Member : uses
+    UserDAOImpl ..> User : uses
+    LoanDAOImpl ..> Loan : uses
+
+    %% CAPA SERVICE
+    class BookService {
+        <<interface>>
+        +registerBook(Book) Book
+        +updateBook(Book) Book
+        +toggleBookStatus(String) void
+        +getBookByIsbn(String) Optional~Book~
+        +getAllBooks() List~Book~
+        +filterBooksByAuthor(String) List~Book~
+        +filterBooksByCategory(String) List~Book~
+    }
+
+    class MemberService {
+        <<interface>>
+        +registerMember(Member) Member
+        +updateMemberInfo(Member) Member
+        +getAllMembers() List~Member~
+    }
+
+    class UserService {
+        <<interface>>
+        +createUser(User) User
+        +getAllUsers() List~User~
+        +updateUser(User) User
+    }
+
+    class LoanService {
+        <<interface>>
+        +performLoan(String, int) Loan
+        +registerReturn(int) Loan
+        +getOverdueLoans() List~Loan~
+    }
+
+    class AuthService {
+        <<interface>>
+        +login(String, String) Optional~User~
+    }
+
+    class ExportService {
+        <<interface>>
+        +exportBooksToCsv(Path) void
+        +exportOverdueLoansToCsv(Path) void
+    }
+
+    class BookServiceImpl {
+        -BookDAO bookDAO
+        +registerBook(Book) Book
+        +updateBook(Book) Book
+        +getAllBooks() List~Book~
+    }
+
+    class MemberServiceImpl {
+        -MemberDAO memberDAO
+        +registerMember(Member) Member
+        +getAllMembers() List~Member~
+    }
+
+    class UserServiceImpl {
+        -UserDAO userDAO
+        +createUser(User) User
+        +getAllUsers() List~User~
+    }
+
+    class LoanServiceImpl {
+        -LoanDAO loanDAO
+        -BookDAO bookDAO
+        -MemberDAO memberDAO
+        +performLoan(String, int) Loan
+        +registerReturn(int) Loan
+    }
+
+    class AuthServiceImpl {
+        -UserDAO userDAO
+        +login(String, String) Optional~User~
+    }
+
+    class ExportServiceImpl {
+        -BookDAO bookDAO
+        -LoanDAO loanDAO
+        +exportBooksToCsv(Path) void
+        +exportOverdueLoansToCsv(Path) void
+    }
+
+    class UserWithDefaultsDecorator {
+        -UserService wrappedUserService
+        +createUser(User) User
+        +getAllUsers() List~User~
+        +updateUser(User) User
+    }
+
+    %% Relaciones Service
+    BookService <|.. BookServiceImpl : implements
+    MemberService <|.. MemberServiceImpl : implements
+    UserService <|.. UserServiceImpl : implements
+    LoanService <|.. LoanServiceImpl : implements
+    AuthService <|.. AuthServiceImpl : implements
+    ExportService <|.. ExportServiceImpl : implements
+    UserService <|.. UserWithDefaultsDecorator : decorates
+
+    BookServiceImpl --> BookDAO : uses
+    MemberServiceImpl --> MemberDAO : uses
+    UserServiceImpl --> UserDAO : uses
+    LoanServiceImpl --> LoanDAO : uses
+    LoanServiceImpl --> BookDAO : uses
+    LoanServiceImpl --> MemberDAO : uses
+    AuthServiceImpl --> UserDAO : uses
+    ExportServiceImpl --> BookDAO : uses
+    ExportServiceImpl --> LoanDAO : uses
+    UserWithDefaultsDecorator --> UserService : wraps
+
+    %% EXCEPCIONES
+    class LibroNovaException {
+        -ErrorCode errorCode
+        +getErrorCode() ErrorCode
+    }
+
+    class ErrorCode {
+        <<enumeration>>
+        ISBN_DUPLICATE
+        STOCK_INSUFFICIENT
+        PARTNER_INACTIVE
+        INVALID_DATA
+        INVALID_CREDENTIALS
+        MEMBER_DUPLICATE
+        DB_CONNECTION
+        QUERY_ERROR
+        TRANSACTION_ERROR
+        CSV_EXPORT_ERROR
+        -int code
+        -String message
+        -String severity
+    }
+
+    class IsbnDuplicateException {
+    }
+
+    class InsufficientStockException {
+    }
+
+    class InactiveMemberException {
+    }
+
+    class MemberDuplicateException {
+    }
+
+    class DataAccessException {
+    }
+
+    LibroNovaException --> ErrorCode : has
+    LibroNovaException <|-- IsbnDuplicateException : extends
+    LibroNovaException <|-- InsufficientStockException : extends
+    LibroNovaException <|-- InactiveMemberException : extends
+    LibroNovaException <|-- MemberDuplicateException : extends
+    LibroNovaException <|-- DataAccessException : extends
+
+    %% CAPA CONTROLLER
+    class BookController {
+        -BookService bookService
+        +getAllBooks() List~Book~
+        +createBook(Book) boolean
+        +updateBook(Book) boolean
+        +toggleBookStatus(String) boolean
+    }
+
+    class MemberController {
+        -MemberService memberService
+        +getAllMembers() List~Member~
+        +createMember(Member) boolean
+    }
+
+    class UserController {
+        -UserService userService
+        +getAllUsers() List~User~
+        +createUser(User) boolean
+        +updateUser(User) boolean
+    }
+
+    class LoanController {
+        -LoanService loanService
+        +performLoan(String, int) boolean
+        +registerReturn(int) boolean
+    }
+
+    class AuthController {
+        -AuthService authService
+        +attemptLogin(String, char[]) Optional~User~
+    }
+
+    class ExportController {
+        -ExportService exportService
+        +exportBooks() void
+        +exportOverdueLoans() void
+    }
+
+    BookController --> BookService : uses
+    MemberController --> MemberService : uses
+    UserController --> UserService : uses
+    LoanController --> LoanService : uses
+    AuthController --> AuthService : uses
+    ExportController --> ExportService : uses
+
+    %% UTILIDADES
+    class DatabaseConnector {
+        -String URL
+        -String USER
+        -String PASSWORD
+        +getConnection()$ Connection
+    }
+
+    class LoggerManager {
+        -Logger logger
+        +log(Level, String)$ void
+        +logHttpRequest(String, String, String)$ void
+    }
+
+    class PropertiesLoader {
+        -Properties PROPERTIES
+        +getProperty(String)$ String
+    }
+
+    class CsvExporter {
+        +exportBooks(Path, List~Book~)$ void
+        +exportOverdueLoans(Path, List~Loan~)$ void
+    }
+
+    BookDAOImpl ..> DatabaseConnector : uses
+    MemberDAOImpl ..> DatabaseConnector : uses
+    UserDAOImpl ..> DatabaseConnector : uses
+    LoanDAOImpl ..> DatabaseConnector : uses
+    
+    DatabaseConnector ..> PropertiesLoader : uses
+    ExportServiceImpl ..> CsvExporter : uses

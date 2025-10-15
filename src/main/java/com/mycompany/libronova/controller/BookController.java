@@ -10,6 +10,7 @@ import com.mycompany.libronova.service.BookService;
 import com.mycompany.libronova.util.LoggerManager;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import javax.swing.JOptionPane;
 
@@ -101,5 +102,22 @@ public class BookController {
     
     private void showSuccessMessage(String message) {
         JOptionPane.showMessageDialog(null, message, "Success", JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    public Optional<Book> getBookByIsbn(String isbn) {
+        try {
+            // Delega la llamada directamente al servicio.
+            return bookService.getBookByIsbn(isbn);
+        } catch (LibroNovaException ex) {
+            // Si ocurre un error en una capa inferior (ej. error de BD), lo maneja.
+            LoggerManager.log(Level.SEVERE, "Failed to retrieve book with ISBN: " + isbn, ex);
+            JOptionPane.showMessageDialog(
+                null,
+                "Failed to retrieve book: " + ex.getErrorCode().getMessage(),
+                "Error - Code: " + ex.getErrorCode().getCode(),
+                JOptionPane.ERROR_MESSAGE
+            );
+            return Optional.empty(); // Devuelve un Optional vacío en caso de error.
+        }
     }
 }

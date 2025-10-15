@@ -8,6 +8,7 @@ import com.mycompany.libronova.dao.UserDAO;
 import com.mycompany.libronova.model.User;
 import com.mycompany.libronova.service.UserService;
 import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -39,5 +40,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public User updateUser(User user) {
         return userDAO.update(user);
+    }
+
+    @Override
+    public Optional<User> getUserById(int id) {
+        // La lógica de negocio aquí es simplemente delegar la llamada al DAO.
+        return userDAO.findById(id);
     }
 }

@@ -1,28 +1,18 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.libronova.view.panels;
 
-/**
- *
- * @author Coder
- */
 import com.mycompany.libronova.controller.UserController;
 import com.mycompany.libronova.model.User;
+import com.mycompany.libronova.view.dialogs.UserFormDialog;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
-/**
- * A JPanel for managing system users. It's accessible only to ADMIN users.
- */
 public class UserManagementPanel extends JPanel {
 
     private final UserController userController;
 
-    // --- UI Components ---
+    // --- Componentes Visuales ---
     private JTable userTable;
     private DefaultTableModel tableModel;
     private JButton addButton, editButton;
@@ -31,21 +21,20 @@ public class UserManagementPanel extends JPanel {
         this.userController = userController;
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        initComponents();
-        initListeners();
         
-        // Initial data load
-        loadUserData();
+        initComponents(); // Crear los componentes
+        initListeners();  // Asignar acciones a los botones
+        loadUserData();   // Cargar los datos iniciales
     }
 
+    // <<< CORRECCIÓN: CÓDIGO COMPLETO PARA CREAR LOS COMPONENTES VISUALES
     private void initComponents() {
-        // --- Center Panel (Table) ---
+        // --- Panel Central (Tabla) ---
         String[] columnNames = {"ID", "Username", "Role", "Status", "Created At"};
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false;
+                return false; // Las celdas no son editables directamente
             }
         };
         userTable = new JTable(tableModel);
@@ -53,7 +42,7 @@ public class UserManagementPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(userTable);
         add(scrollPane, BorderLayout.CENTER);
 
-        // --- Right Panel (Action Buttons) ---
+        // --- Panel Derecho (Botones de Acción) ---
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
         rightPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
@@ -68,18 +57,22 @@ public class UserManagementPanel extends JPanel {
         editButton.setMaximumSize(buttonSize);
 
         rightPanel.add(addButton);
-        rightPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        rightPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Espaciador
         rightPanel.add(editButton);
         
         add(rightPanel, BorderLayout.EAST);
     }
 
     private void initListeners() {
+        // La lógica para añadir un nuevo usuario está bien.
         addButton.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Add New User dialog would open here.", "Info", JOptionPane.INFORMATION_MESSAGE);
-            loadUserData();
+            Frame parentFrame = (Frame) SwingUtilities.getWindowAncestor(this);
+            UserFormDialog dialog = new UserFormDialog(parentFrame, userController);
+            dialog.setVisible(true);
+            loadUserData(); // Refresca la tabla después de cerrar el diálogo
         });
 
+        // <<< CORRECCIÓN: LÓGICA COMPLETA PARA EDITAR UN USUARIO
         editButton.addActionListener(e -> {
             int selectedRow = userTable.getSelectedRow();
             if (selectedRow == -1) {
@@ -87,12 +80,21 @@ public class UserManagementPanel extends JPanel {
                 return;
             }
             int userId = (int) tableModel.getValueAt(selectedRow, 0);
-            JOptionPane.showMessageDialog(this, "Edit dialog for User ID: " + userId + " would open here.", "Info", JOptionPane.INFORMATION_MESSAGE);
-            loadUserData();
+            
+            // La forma correcta de manejar un Optional: usar .ifPresent()
+            // Este código solo se ejecuta SI el Optional contiene un User.
+            userController.getUserById(userId).ifPresent(userToEdit -> {
+                 Frame parentFrame = (Frame) SwingUtilities.getWindowAncestor(this);
+                 UserFormDialog dialog = new UserFormDialog(parentFrame, userController, userToEdit);
+                 dialog.setVisible(true);
+                 loadUserData(); // Refresca la tabla
+            });
         });
     }
 
     private void loadUserData() {
+        // Este método está bien, pero depende de que `tableModel` no sea null.
+        // Por eso es crucial que initComponents() se ejecute primero.
         tableModel.setRowCount(0);
         List<User> users = userController.getAllUsers();
         for (User user : users) {

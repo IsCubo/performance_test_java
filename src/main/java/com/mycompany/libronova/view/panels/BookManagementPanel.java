@@ -1,20 +1,14 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.libronova.view.panels;
 
 import com.mycompany.libronova.controller.BookController;
 import com.mycompany.libronova.model.Book;
-import java.awt.*;
+import com.mycompany.libronova.view.dialogs.BookFormDialog;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
-/**
- *
- * @author Coder
- */
 /**
  * A JPanel for managing the book catalog. It displays books in a table
  * and provides controls for filtering, adding, and editing books.
@@ -22,25 +16,21 @@ import java.util.List;
 public class BookManagementPanel extends JPanel {
 
     private final BookController bookController;
+    private List<Book> allBooks; // Cache for local search functionality
 
     // --- UI Components ---
     private JTable bookTable;
     private DefaultTableModel tableModel;
-    private JButton addButton, editButton, toggleStatusButton;
+    private JButton addButton, editButton, toggleStatusButton, searchButton, clearButton;
     private JTextField searchField;
     private JComboBox<String> filterComboBox;
 
     public BookManagementPanel(BookController bookController) {
         this.bookController = bookController;
-        
-        // Use BorderLayout for the main panel structure
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
         initComponents();
         initListeners();
-        
-        // Initial data load
         loadBookData();
     }
 
@@ -49,17 +39,17 @@ public class BookManagementPanel extends JPanel {
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         
         topPanel.add(new JLabel("Filter by:"));
-        filterComboBox = new JComboBox<>(new String[]{"Author", "Category"});
+        filterComboBox = new JComboBox<>(new String[]{"Title", "Author", "Category", "ISBN"});
         topPanel.add(filterComboBox);
         
         topPanel.add(new JLabel("Search:"));
         searchField = new JTextField(20);
         topPanel.add(searchField);
         
-        JButton searchButton = new JButton("Search");
+        searchButton = new JButton("Search");
         topPanel.add(searchButton);
         
-        JButton clearButton = new JButton("Clear");
+        clearButton = new JButton("Clear");
         topPanel.add(clearButton);
 
         add(topPanel, BorderLayout.NORTH);
@@ -67,15 +57,14 @@ public class BookManagementPanel extends JPanel {
         // --- Center Panel (Table with books) ---
         String[] columnNames = {"ISBN", "Title", "Author", "Category", "Available Copies", "Status"};
         tableModel = new DefaultTableModel(columnNames, 0) {
-            // Make cells non-editable
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
         bookTable = new JTable(tableModel);
-        bookTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); // Allow only one row to be selected
-        bookTable.getTableHeader().setReorderingAllowed(false); // Prevent column reordering
+        bookTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        bookTable.getTableHeader().setReorderingAllowed(false);
         JScrollPane scrollPane = new JScrollPane(bookTable);
         add(scrollPane, BorderLayout.CENTER);
 
@@ -88,7 +77,6 @@ public class BookManagementPanel extends JPanel {
         editButton = new JButton("Edit Selected");
         toggleStatusButton = new JButton("Toggle Status");
         
-        // Set a consistent size for buttons
         Dimension buttonSize = new Dimension(120, 30);
         addButton.setPreferredSize(buttonSize);
         editButton.setPreferredSize(buttonSize);
@@ -98,9 +86,9 @@ public class BookManagementPanel extends JPanel {
         toggleStatusButton.setMaximumSize(buttonSize);
         
         rightPanel.add(addButton);
-        rightPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Spacer
+        rightPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         rightPanel.add(editButton);
-        rightPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Spacer
+        rightPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         rightPanel.add(toggleStatusButton);
         
         add(rightPanel, BorderLayout.EAST);
@@ -109,11 +97,10 @@ public class BookManagementPanel extends JPanel {
     private void initListeners() {
         // Add button listener
         addButton.addActionListener(e -> {
-            // Here you would open a JDialog form to get new book details
-            // For example: new BookFormDialog(bookController).setVisible(true);
-            JOptionPane.showMessageDialog(this, "Add New Book dialog would open here.", "Info", JOptionPane.INFORMATION_MESSAGE);
-            // After the dialog closes, refresh the data
-            loadBookData();
+            Frame parentFrame = (Frame) SwingUtilities.getWindowAncestor(this);
+            BookFormDialog dialog = new BookFormDialog(parentFrame, bookController);
+            dialog.setVisible(true);
+            loadBookData(); // Reload table after the dialog is closed
         });
 
         // Edit button listener
@@ -123,9 +110,15 @@ public class BookManagementPanel extends JPanel {
                 JOptionPane.showMessageDialog(this, "Please select a book to edit.", "Warning", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            String selectedIsbn = (String) tableModel.getValueAt(selectedRow, 0);
-            JOptionPane.showMessageDialog(this, "Edit dialog for ISBN: " + selectedIsbn + " would open here.", "Info", JOptionPane.INFORMATION_MESSAGE);
-            loadBookData();
+            String isbn = (String) tableModel.getValueAt(selectedRow, 0);
+
+            // <<< CORRECCIÓN: El nombre del método es 'getBookByIsbn', no 'get'.
+            bookController.getBookByIsbn(isbn).ifPresent(bookToEdit -> {
+                Frame parentFrame = (Frame) SwingUtilities.getWindowAncestor(this);
+                BookFormDialog dialog = new BookFormDialog(parentFrame, bookController, bookToEdit);
+                dialog.setVisible(true);
+                loadBookData(); // Reload table
+            });
         });
 
         // Toggle Status button listener
@@ -141,32 +134,60 @@ public class BookManagementPanel extends JPanel {
                 "Confirm Status Change",
                 JOptionPane.YES_NO_OPTION);
 
-            if (confirm == JOptionPane.YES_OPTION) {
-                if (bookController.toggleBookStatus(selectedIsbn)) {
-                    loadBookData(); // Refresh table on success
-                }
+            if (confirm == JOptionPane.YES_OPTION && bookController.toggleBookStatus(selectedIsbn)) {
+                loadBookData();
             }
+        });
+        
+        // Search and Clear listeners
+        searchButton.addActionListener(e -> performSearch());
+        clearButton.addActionListener(e -> {
+            searchField.setText("");
+            populateTable(this.allBooks); // Restore the full table
         });
     }
 
-    /**
-     * Fetches the book data from the controller and populates the JTable.
-     */
     private void loadBookData() {
-        // Clear existing data
-        tableModel.setRowCount(0);
+        this.allBooks = bookController.getAllBooks(); // Load and cache all books
+        populateTable(this.allBooks); // Display all books in the table
+    }
 
-        List<Book> books = bookController.getAllBooks();
+    private void populateTable(List<Book> books) {
+        tableModel.setRowCount(0);
         for (Book book : books) {
             Object[] rowData = {
-                book.getIsbn(),
-                book.getTitle(),
-                book.getAuthor(),
-                book.getCategory(),
-                book.getAvailableCopies(),
+                book.getIsbn(), book.getTitle(), book.getAuthor(),
+                book.getCategory(), book.getAvailableCopies(),
                 book.isActive() ? "Active" : "Inactive"
             };
             tableModel.addRow(rowData);
         }
+    }
+
+    private void performSearch() {
+        String searchTerm = searchField.getText().toLowerCase().trim();
+        String filterType = (String) filterComboBox.getSelectedItem();
+
+        if (searchTerm.isEmpty()) {
+            populateTable(this.allBooks);
+            return;
+        }
+
+        List<Book> filteredBooks = this.allBooks.stream()
+            .filter(book -> {
+                // Defensive null check for category, in case a book has no category
+                String category = book.getCategory() != null ? book.getCategory().toLowerCase() : "";
+                
+                switch (filterType) {
+                    case "Title":    return book.getTitle().toLowerCase().contains(searchTerm);
+                    case "Author":   return book.getAuthor().toLowerCase().contains(searchTerm);
+                    case "Category": return category.contains(searchTerm);
+                    case "ISBN":     return book.getIsbn().contains(searchTerm);
+                    default:         return false;
+                }
+            })
+            .collect(Collectors.toList());
+        
+        populateTable(filteredBooks);
     }
 }

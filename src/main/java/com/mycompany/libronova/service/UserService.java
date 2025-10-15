@@ -16,6 +16,7 @@ import java.util.List;
  * This is the base interface for the Decorator pattern.
  */
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Service interface for managing {@link User} entities.
@@ -49,5 +50,6 @@ public interface UserService {
      * @return the updated {@link User}
      */
     User updateUser(User user);
+    Optional<User> getUserById(int id);
 }
 

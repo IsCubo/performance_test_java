@@ -10,6 +10,7 @@ import com.mycompany.libronova.service.UserService;
 import com.mycompany.libronova.util.LoggerManager;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import javax.swing.JOptionPane;
 
@@ -88,4 +89,13 @@ public class UserController {
     private void showSuccessMessage(String message) {
         JOptionPane.showMessageDialog(null, message, "Success", JOptionPane.INFORMATION_MESSAGE);
     }
+    
+    public Optional<User> getUserById(int id) {
+    try {
+        return userService.getUserById(id);
+    } catch (LibroNovaException ex) {
+        handleError(ex, "Failed to retrieve user with id: " + id);
+        return Optional.empty();
+    }
+}
 }
